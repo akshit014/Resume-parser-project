@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Resume Parser{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column - Upload Resumes -->
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-cloud-upload"></i> Upload Resumes
+                </h4>
+            </div>
+            <div class="card-body">
+                <form action="/upload" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="resumes" class="form-label">Select Resume Files</label>
+                        <input type="file" class="form-control" id="resumes" name="resumes" 
+                               accept=".pdf,.docx,.txt" multiple required>
+                        <div class="form-text">
+                            Supported formats: PDF, DOCX, TXT. You can select multiple files.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-upload"></i> Upload & Parse Resumes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> How to Use
+                </h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Upload resume files (PDF, DOCX, or TXT format)</li>
+                    <li>Add a job description below</li>
+                    <li>Click "Rank Resumes" to match candidates with the job</li>
+                    <li>View results in the dashboard</li>
+                </ol>
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Note:</strong> The AI extracts name, email, phone, skills, education, and experience automatically.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Add Job Description -->
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-briefcase"></i> Add Job Description
+                </h4>
+            </div>
+            <div class="card-body">
+                <form action="/add-job" method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Job Title</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="e.g., Senior Python Developer" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Job Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="8" placeholder="Paste the complete job description here..." required></textarea>
+                        <div class="form-text">
+                            Include required skills, qualifications, and experience.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-plus-circle"></i> Add Job
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Existing Jobs Card -->
+        {% if jobs %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul"></i> Existing Jobs ({{ jobs|length }})
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <div class="list-group">
+                    {% for job in jobs %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ job.title }}</h6>
+                            <small class="text-muted">
+                                Added: {{ job.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                        </div>
+                        <div>
+                            <a href="/rank/{{ job.id }}" class="btn btn-sm btn-primary me-2">
+                                <i class="bi bi-graph-up"></i> Rank
+                            </a>
+                            <form action="/delete-job/{{ job.id }}" method="POST" class="d-inline" 
+                                  onsubmit="return confirm('Delete this job?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-file-earmark-text display-4 text-primary"></i>
+                <h3 class="mt-3">{{ stats.total_resumes if stats else 0 }}</h3>
+                <p class="text-muted">Total Resumes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-briefcase-fill display-4 text-success"></i>
+                <h3 class="mt-3">{{ stats.total_jobs if stats else 0 }}</h3>
+                <p class="text-muted">Job Openings</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-robot display-4 text-info"></i>
+                <h3 class="mt-3">AI-Powered</h3>
+                <p class="text-muted">Smart Matching</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Get stats from Flask
+    fetch('/dashboard')
+        .then(response => response.text())
+        .then(html => {
+            // This would normally use an API endpoint, but for simplicity we're using the dashboard
+            console.log('Page loaded successfully');
+        });
+</script>
+{% endblock %}

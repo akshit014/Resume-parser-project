@@ -1,0 +1,9 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+spacy==3.6.1
+scikit-learn==1.2.2
+nltk==3.8.1
+PyMuPDF==1.23.6
+docx2txt==0.8
+python-docx==0.8.11
+pandas==2.0.3

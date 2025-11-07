@@ -1,0 +1,41 @@
+python
+java
+javascript
+c++
+c#
+sql
+mysql
+postgresql
+mongodb
+html
+css
+react
+angular
+vue
+nodejs
+django
+flask
+spring
+machine learning
+deep learning
+artificial intelligence
+data analysis
+data science
+tensorflow
+pytorch
+aws
+azure
+docker
+kubernetes
+git
+agile
+scrum
+project management
+communication
+leadership
+problem solving
+teamwork
+excel
+powerpoint
+tableau
+power bi

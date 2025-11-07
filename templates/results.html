@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ job.title | e }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="/dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white">
+        <h3 class="mb-0">
+            <i class="bi bi-trophy"></i> Ranking Results
+        </h3>
+    </div>
+    <div class="card-body">
+        <h4 id="job-title">{{ job.title | e }}</h4>
+        <p class="text-muted">{{ results|length }} candidates ranked</p>
+        <hr>
+        <details>
+            <summary class="btn btn-sm btn-outline-primary mb-3">View Job Description</summary>
+            <div class="border rounded p-3 mt-2 bg-light">
+                <pre style="white-space: pre-wrap;">{{ job.description | e }}</pre>
+            </div>
+        </details>
+    </div>
+</div>
+
+{% if results %}
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">
+            <i class="bi bi-list-ol"></i> Ranked Candidates
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="results-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Rank</th>
+                        <th>Match Score</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Skills Match</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                        {# compute safe values up front #}
+                        {% set score = (result.score | default(0) | int) %}
+                        {% set skills_text = result.resume.skills | default('') %}
+                        {% set resume_id = result.resume.id | default(loop.index) %}
+                        {% if score >= 70 %}
+                            {% set bar_class = 'bg-success' %}
+                        {% elif score >= 50 %}
+                            {% set bar_class = 'bg-warning' %}
+                        {% else %}
+                            {% set bar_class = 'bg-danger' %}
+                        {% endif %}
+
+                    <tr class="{% if loop.index <= 3 %}table-success{% endif %}">
+                        <td>
+                            <strong class="fs-5">
+                                {% if loop.index == 1 %}
+                                    <i class="bi bi-trophy-fill text-warning"></i>
+                                {% elif loop.index == 2 %}
+                                    <i class="bi bi-trophy-fill text-secondary"></i>
+                                {% elif loop.index == 3 %}
+                                    <i class="bi bi-trophy-fill text-danger"></i>
+                                {% endif %}
+                                #{{ loop.index }}
+                            </strong>
+                        </td>
+
+                        <!-- Use a single token class and data-width (no Jinja control inside attributes) -->
+                        <td style="min-width:220px;">
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar {{ bar_class }}" role="progressbar"
+                                     data-width="{{ score }}" aria-valuemin="0" aria-valuemax="100" style="width:0%;">
+                                    <strong>{{ score }}%</strong>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td><strong>{{ result.resume.name | default('') | e }}</strong></td>
+
+                        <td>
+                            {% if result.resume.email and result.resume.email != "Not found" %}
+                                <a href="mailto:{{ result.resume.email | e }}">{{ result.resume.email | e }}</a>
+                            {% else %}
+                                <span class="text-muted">Not found</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ result.resume.phone | default('') | e }}</td>
+
+                        <td>
+                            {% if skills_text and skills_text != "No skills detected" %}
+                                {% set skill_count = (skills_text | split(',')) | length %}
+                                <span class="badge bg-info">{{ skill_count }} skills</span>
+                            {% else %}
+                                <span class="text-muted">None</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#detailModal{{ resume_id | e }}">
+                                <i class="bi bi-eye"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{# Modals after the table #}
+{% for result in results %}
+    {% set score = (result.score | default(0) | int) %}
+    {% set skills_text = result.resume.skills | default('') %}
+    {% set resume_id = result.resume.id | default(loop.index) %}
+<div class="modal fade" id="detailModal{{ resume_id | e }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">{{ result.resume.name | default('') | e }} - {{ score }}% Match</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>Match Score: {{ score }}%</strong> -
+                    {% if score >= 70 %}
+                        Excellent match! Highly recommended for interview.
+                    {% elif score >= 50 %}
+                        Good match. Consider for interview.
+                    {% else %}
+                        Low match. May not be suitable for this role.
+                    {% endif %}
+                </div>
+
+                <h6>Contact Information</h6>
+                <ul>
+                    <li><strong>Email:</strong>
+                        {% if result.resume.email and result.resume.email != "Not found" %}
+                            <a href="mailto:{{ result.resume.email | e }}">{{ result.resume.email | e }}</a>
+                        {% else %}
+                            <span class="text-muted">Not found</span>
+                        {% endif %}
+                    </li>
+                    <li><strong>Phone:</strong> {{ result.resume.phone | default('') | e }}</li>
+                </ul>
+
+                <h6>Skills</h6>
+                <div class="mb-3">
+                    {% if skills_text and skills_text != "No skills detected" %}
+                        {% for skill in skills_text | split(',') %}
+                            <span class="badge bg-primary me-1 mb-1">{{ skill | trim | e }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No skills detected</span>
+                    {% endif %}
+                </div>
+
+                <h6>Education</h6>
+                <div class="border rounded p-2 mb-3" style="max-height:150px; overflow-y:auto;">
+                    <pre class="mb-0" style="white-space:pre-wrap;">{{ result.resume.education | default('') | e }}</pre>
+                </div>
+
+                <h6>Experience</h6>
+                <div class="border rounded p-2 mb-3" style="max-height:150px; overflow-y:auto;">
+                    <pre class="mb-0" style="white-space:pre-wrap;">{{ result.resume.experience | default('') | e }}</pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                {% if result.resume.email and result.resume.email != "Not found" %}
+                <a href="mailto:{{ result.resume.email | e }}" class="btn btn-primary">
+                    <i class="bi bi-envelope"></i> Send Email
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Export Options -->
+<div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <h5><i class="bi bi-download"></i> Export Results</h5>
+        <p class="text-muted">Download results for further analysis</p>
+        <button class="btn btn-success" id="export-csv-btn">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Export to CSV
+        </button>
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print Results
+        </button>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i>
+    <strong>No results found.</strong> Make sure you have uploaded resumes before ranking.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* Apply widths from data-width (keeps Jinja out of style attributes) */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.progress-bar[data-width]').forEach(function (pb) {
+        let raw = pb.getAttribute('data-width');
+        let n = parseInt(raw, 10);
+        if (!Number.isFinite(n)) n = 0;
+        if (n < 0) n = 0;
+        if (n > 100) n = 100;
+        pb.style.width = n + '%';
+        pb.setAttribute('aria-valuenow', String(n));
+    });
+});
+
+/* CSV helper: escape values safely */
+function csvEscape(val) {
+    if (val === null || val === undefined) return '';
+    const s = String(val).replace(/\r?\n|\r/g, ' ').trim();
+    if (s.includes('"') || s.includes(',') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+}
+
+function exportToCSV() {
+    const table = document.getElementById('results-table');
+    if (!table) {
+        alert('Results table not found.');
+        return;
+    }
+
+    const headers = ['Rank','Match Score','Name','Email','Phone','Skills'];
+    const rows = [headers];
+
+    const tbody = table.tBodies[0];
+    if (!tbody) {
+        alert('No data rows found.');
+        return;
+    }
+
+    Array.from(tbody.rows).forEach(row => {
+        const rank = row.cells[0] ? row.cells[0].textContent.trim().replace(/\s+/g,' ') : '';
+        const scoreStrong = row.cells[1] ? row.cells[1].querySelector('strong') : null;
+        const score = scoreStrong ? scoreStrong.textContent.trim() : (row.cells[1] ? row.cells[1].textContent.trim() : '');
+        const name = row.cells[2] ? row.cells[2].textContent.trim() : '';
+        const emailLink = row.cells[3] ? row.cells[3].querySelector('a') : null;
+        const email = emailLink ? emailLink.textContent.trim() : (row.cells[3] ? row.cells[3].textContent.trim() : '');
+        const phone = row.cells[4] ? row.cells[4].textContent.trim() : '';
+        const skills = row.cells[5] ? row.cells[5].textContent.trim() : '';
+
+        rows.push([rank, score, name, email, phone, skills]);
+    });
+
+    const csvContent = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    const jobTitleEl = document.getElementById('job-title');
+    let jobTitle = 'results';
+    if (jobTitleEl) {
+        jobTitle = jobTitleEl.textContent.trim().replace(/\s+/g, '_').replace(/[^\w\-\._]/g, '') || 'results';
+    }
+
+    a.href = url;
+    a.download = `ranking_results_${jobTitle}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById('export-csv-btn')?.addEventListener('click', exportToCSV);
+</script>
+{% endblock %}
