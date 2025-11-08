@@ -21,16 +21,15 @@ main {
     margin-right: 8px;
 }
 
-/* Card Enhancements */
+/* Card Enhancements - NO TRANSFORM */
 .card {
     border: none;
     border-radius: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .card-header {
@@ -38,16 +37,15 @@ main {
     font-weight: 600;
 }
 
-/* Button Styling */
+/* Button Styling - NO TRANSFORM */
 .btn {
     border-radius: 5px;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Table Styling */
@@ -61,7 +59,6 @@ main {
 
 .table-hover tbody tr:hover {
     background-color: #e9ecef;
-    cursor: pointer;
 }
 
 /* Badge Styling */
@@ -103,7 +100,7 @@ main {
 .form-control, .form-select {
     border-radius: 5px;
     border: 2px solid #dee2e6;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s ease;
 }
 
 .form-control:focus, .form-select:focus {
@@ -128,26 +125,26 @@ input[type="file"]::-webkit-file-upload-button {
     padding: 8px 15px;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s ease;
 }
 
 input[type="file"]::-webkit-file-upload-button:hover {
     background-color: #0b5ed7;
 }
 
-/* Statistics Cards */
+/* Statistics Cards - NO TRANSFORM */
 .card.bg-primary,
 .card.bg-success,
 .card.bg-info,
 .card.bg-warning {
-    transition: transform 0.3s;
+    transition: box-shadow 0.3s ease;
 }
 
 .card.bg-primary:hover,
 .card.bg-success:hover,
 .card.bg-info:hover,
 .card.bg-warning:hover {
-    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Trophy Icons */
@@ -160,6 +157,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
     border-radius: 8px !important;
     margin-bottom: 8px;
     border: 1px solid #dee2e6;
+    transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
 }
 
 /* Pre tag styling for resume text */
@@ -187,21 +189,6 @@ pre {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
-}
-
-/* Loading Animation */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
 }
 
 /* Responsive Design */
@@ -236,15 +223,13 @@ pre {
     }
 }
 
-/* Animation for page load */
+/* Smooth fade-in animation */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
@@ -266,4 +251,20 @@ pre {
         transform: translateY(0);
         opacity: 1;
     }
+}
+
+/* Remove any pointer events that might cause issues */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure smooth transitions */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Fix for table row hover */
+.table tbody tr {
+    transition: background-color 0.15s ease;
 }

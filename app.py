@@ -5,6 +5,16 @@ from ranker import ResumeRanker
 import os
 from werkzeug.utils import secure_filename
 
+import os
+
+# Production configuration
+if os.environ.get('RENDER'):
+    # Use absolute path for database on Render
+    basedir = '/opt/render/project/src'
+else:
+    # Local development
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 
