@@ -51,9 +51,10 @@
                 </thead>
                 <tbody>
                     {% for result in results %}
-                        {# compute safe values up front #}
-                        {% set score = (result.score | default(0) | int) %}
-                        {% set skills_text = result.resume.skills | default('') %}
+                        {# use server-provided values: result.score, result.skills_list, result.skill_count #}
+                        {% set score = (result.score | default(0)) %}
+                        {% set skills_list = result.skills_list | default([]) %}
+                        {% set skills_text = result.skills_text | default('') %}
                         {% set resume_id = result.resume.id | default(loop.index) %}
                         {% if score >= 70 %}
                             {% set bar_class = 'bg-success' %}
@@ -100,9 +101,8 @@
                         <td>{{ result.resume.phone | default('') | e }}</td>
 
                         <td>
-                            {% if skills_text and skills_text != "No skills detected" %}
-                                {% set skill_count = (skills_text | split(',')) | length %}
-                                <span class="badge bg-info">{{ skill_count }} skills</span>
+                            {% if skills_list %}
+                                <span class="badge bg-info">{{ result.skill_count }} skills</span>
                             {% else %}
                                 <span class="text-muted">None</span>
                             {% endif %}
@@ -124,8 +124,8 @@
 
 {# Modals after the table #}
 {% for result in results %}
-    {% set score = (result.score | default(0) | int) %}
-    {% set skills_text = result.resume.skills | default('') %}
+    {% set score = (result.score | default(0)) %}
+    {% set skills_list = result.skills_list | default([]) %}
     {% set resume_id = result.resume.id | default(loop.index) %}
 <div class="modal fade" id="detailModal{{ resume_id | e }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -160,9 +160,9 @@
 
                 <h6>Skills</h6>
                 <div class="mb-3">
-                    {% if skills_text and skills_text != "No skills detected" %}
-                        {% for skill in skills_text | split(',') %}
-                            <span class="badge bg-primary me-1 mb-1">{{ skill | trim | e }}</span>
+                    {% if skills_list %}
+                        {% for skill in skills_list %}
+                            <span class="badge bg-primary me-1 mb-1">{{ skill | e }}</span>
                         {% endfor %}
                     {% else %}
                         <span class="text-muted">No skills detected</span>
